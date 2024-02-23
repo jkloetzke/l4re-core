@@ -1,8 +1,9 @@
 PKGDIR	?= ..
 L4DIR	?= $(PKGDIR)/../../..
 
-TARGET = include libs
+TARGET = include libs-nortti libs
 
 include $(L4DIR)/mk/subdir.mk
 
-libs: include
+libs-nortti libs: include
+libs: libs-nortti
