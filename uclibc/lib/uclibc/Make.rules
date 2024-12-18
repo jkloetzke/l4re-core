@@ -14,7 +14,7 @@ PC_FILENAME       := libc
 PC_LIBS           := -lc -lc_nonshared.p
 PC_EXTRA          := Link_Libs= %{static|static-pie:-lc}
 
-REQUIRES_LIBS     := ldscripts libpthread
+REQUIRES_LIBS     := ldscripts libpthread l4re
 
 PICFLAGS += -DSHARED=1
 
@@ -33,7 +33,7 @@ endif
 DEFINES-$(CONFIG_BID_PIE) += -DSTATIC_PIE
 
 LDFLAGS         = -z combreloc -z relro --sort-common \
-		  --warn-common -static-libgcc
+		  --warn-common -static-libgcc --link-libc
 
 LDFLAGS_NONGOLD = --warn-once --sort-section=alignment
 LDFLAGS        += $(LDFLAGS_NONGOLD)
@@ -116,3 +116,9 @@ CPPFLAGS_libc/misc/utmp/utent.c += -I$(LIBCSRC_DIR)/../contrib/uclibc/include
 $(GENERAL_D_LOC): $(LIBCSRC_DIR_ABS)/Make.rules $(LIBCSRC_DIR)/contrib_files.mk \
                   $(LIBCSRC_DIR)/make_vars.mk $(LIBCSRC_DIR)/make_rules.mk
 
+
+LINK_LIBC_LIBS = $(foreach dn,$(L4LIBDIR),\
+                   $(foreach fn,$(addprefix $(dn)/,$(call BID_PKG_CONFIG,$(OBJ_BASE),--libs -- --link-libc,$(REQUIRES_LIBS))),\
+		     $(wildcard $(strip $(fn)))))
+
+OBJS_libc.a += $(LINK_LIBC_LIBS)
