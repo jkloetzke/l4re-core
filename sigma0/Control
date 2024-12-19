@@ -1,2 +1,3 @@
 requires: libc_minimal libc_minimal_l4re crtn l4sys l4util libsigma0 cxx_io
+          cxx_io_kdebug
 Maintainer: warg@os.inf.tu-dresden.de
