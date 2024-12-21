@@ -11,6 +11,7 @@
  */
 
 #include <l4/crtn/initpriorities.h>
+#include <l4/cxx/static_container>
 #include <l4/re/cap_alloc>
 #include <l4/re/env>
 #include <l4/re/util/cap_alloc>
@@ -22,14 +23,17 @@ namespace
   {
     enum { Caps = CONFIG_L4RE_CAP_DFL_ALLOCATOR_MAX };
 
-    L4Re::Util::_Cap_alloc::Storage<Caps> storage;
-    L4Re::Util::Dbg _dbg;
-    L4Re::Cap_alloc_t<L4Re::Util::_Cap_alloc> alloc;
+    cxx::Static_container<L4Re::Util::_Cap_alloc::Storage<Caps>> storage;
+    cxx::Static_container<L4Re::Util::Dbg> _dbg;
+    cxx::Static_container<L4Re::Cap_alloc_t<L4Re::Util::_Cap_alloc>> alloc;
 
     Ca()
-    : _dbg{0xffUL, "Cap_alloc", 0},
-      alloc{Caps, &storage, L4Re::Env::env()->first_free_cap(), &_dbg}
-    { l4re_env()->first_free_cap += Caps; }
+    {
+      storage.construct();
+      _dbg.construct(0xffUL, "Cap_alloc", nullptr);
+      alloc.construct(Caps, storage.get(), L4Re::Env::env()->first_free_cap(), _dbg.get());
+      l4re_env()->first_free_cap += Caps;
+    }
   };
 
   Ca __attribute__((init_priority(INIT_PRIO_L4RE_UTIL_CAP_ALLOC))) __cap_alloc;
@@ -37,10 +41,10 @@ namespace
 
 namespace L4Re {
   namespace Util {
-    _Cap_alloc &cap_alloc = __cap_alloc.alloc;
+    _Cap_alloc &cap_alloc = *__cap_alloc.alloc;
   }
 #ifndef SHARED
-  Cap_alloc *virt_cap_alloc = &__cap_alloc.alloc;
+  Cap_alloc *virt_cap_alloc = __cap_alloc.alloc.get();
 #else
   // defined in ldso in the case of shared libs
   extern Cap_alloc *__rtld_l4re_virt_cap_alloc __attribute__((weak));
@@ -51,7 +55,7 @@ namespace L4Re {
   setup()
   {
     if (&__rtld_l4re_virt_cap_alloc)
-      __rtld_l4re_virt_cap_alloc = &__cap_alloc.alloc;
+      __rtld_l4re_virt_cap_alloc = __cap_alloc.alloc.get();
   }
 #endif
 }
