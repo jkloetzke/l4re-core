@@ -1,4 +1,5 @@
 Provides: libc libpthread libc_minimal_l4re
 requires: l4sys l4re ldscripts compiler-rt libl4re-vfs libc_be_minimal_log_io l4re-util
-          libc_be_l4re libc_be_l4refile libc_support_misc libc_be_fs_noop
+          libc_be_l4re libc_be_l4refile libc_support_misc libc_be_fs_noop libc_be_sem_noop
+	  libc_be_sig_noop libc_be_socket_noop
 Maintainer: adam@os.inf.tu-dresden.de
